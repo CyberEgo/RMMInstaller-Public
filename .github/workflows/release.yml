@@ -1,0 +1,62 @@
+# GitHub Actions Workflow for Automated Releases
+# Save as: .github/workflows/release.yml in your public distribution repo
+
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 1.0.0.2)'
+        required: true
+        type: string
+      release_notes:
+        description: 'Release notes'
+        required: true
+        type: string
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.event.inputs.version }}
+          release_name: RMM Installer v${{ github.event.inputs.version }}
+          body: |
+            ## What's New in v${{ github.event.inputs.version }}
+            
+            ${{ github.event.inputs.release_notes }}
+            
+            ## Download
+            
+            Download the MSI installer below for Windows systems.
+            
+            ## Installation Notes
+            
+            - Run as administrator
+            - Automatic upgrade handling prevents duplicate entries
+            - Compatible with Windows 10/11 and Windows Server 2016+
+            
+            ## Checksums
+            
+            SHA256 checksums will be provided after upload.
+            
+          draft: false
+          prerelease: false
+
+# Manual process for now - you'll upload the MSI file manually
+# In the future, you could automate this by:
+# 1. Triggering this from your private repo
+# 2. Building the MSI in the workflow
+# 3. Automatically uploading the artifact
